@@ -1,22 +1,39 @@
-// import React from 'react';
-// import { Hello } from './Hello.jsx';
-// import { Info } from './Info.jsx';
 
-// export const App = () => (
-//   <div>
-//     <h1>Welcome to Meteor!</h1>
-//     <Hello/>
-//     <Info/>
-//   </div>
-// );
+import React from 'react';
+import { withTracker } from 'meteor/react-meteor-data';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import RegisterForm from './RegisterForm';
+import BorrowerDashboard from './BorrowerDashboard';
+import LenderDashboard from './LenderDashboard';
+import AdminDashboard from './AdminDashboard';
+import LoanRequestForm from './LoanRequestForm';
+import { Loans } from '../../api/loans/loans';
 
+const App = ({ user, loans }) => {
+  if (!user) return <RegisterForm />;
 
-import React from 'react'
-
-const App = () => {
   return (
-    <div>App</div>
-  )
-}
+    <Router>
+      <Switch>
+        <Route path="/borrower">
+          <BorrowerDashboard loans={loans} />
+          <LoanRequestForm />
+        </Route>
+        <Route path="/lender">
+          <LenderDashboard loans={loans} />
+        </Route>
+        <Route path="/admin">
+          <AdminDashboard loans={loans} />
+        </Route>
+      </Switch>
+    </Router>
+  );
+};
 
-export default App
+export default withTracker(() => {
+  Meteor.subscribe('loans');
+  return {
+    user: Meteor.user(),
+    loans: Loans.find({}).fetch(),
+  };
+})(App);
